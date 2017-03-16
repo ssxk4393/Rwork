@@ -95,7 +95,6 @@ mean(z2); sd(z)
 
 
 
-
 # 정규화 : 다양한 특징을 갖는 data를 정한 범위로 일치시킴
 
 # (1) log() - 자연로그
@@ -204,12 +203,12 @@ summary(result)
     # shapiro.test() : 정규분포 검정 함수
     
     shapiro.test(x1) # 정규분포 검정 함수(p-value = 0.7242) 
+    # 정규분포(모수검정) -> t.test()
+    # 비정규분포(비모수검정) -> wilcox.test()
 
     
 # 4. 가설검정 - 모수/비모수
     
-    # 정규분포(모수검정) -> t.test()
-    # 비정규분포(비모수검정) -> wilcox.test()
     
     
     # 1) 양측검정 - 정제 데이터와 5.2시간 비교
@@ -347,7 +346,6 @@ summary(result)
     t.test(method1_score, method2_score, alter="two.sided", conf.int=TRUE, conf.level=0.95)
     # p-value = 0.0411 - 두 집단간 평균에 차이가 있다.
 
-    
 # # 방향성이 있는 연구가설 검정 
     t.test(method1_score, method2_score, alter="greater", conf.int=TRUE, conf.level=0.95)
     # p-value = 0.9794 > 0.05     귀무가설 채택! 연구가설 기각
@@ -459,7 +457,6 @@ summary(result)
     table(method, survey, useNA="ifany") # 그룹별 클릭수 : 1-43, 2-34, 3-37
 
 
-
 # 4. 세집단 비율차이 검정
     
     # prop.test(그룹별 빈도, 그룹수) -> 집단이 늘어나도 동일한 함수 사용-땡큐
@@ -490,7 +487,7 @@ summary(result)
         # (1)
     
             bartlett.test(Sepal.Width ~ Species, data=iris)
-            # p-value = 0.3515  세 분포가 같다! ==> aov함수 적용!       if 다르다! ==> kruskal.test() 적용!
+            # p-value = 0.3515  세 분포가 같다! ==> aov함수 적용! 
         
             model <- aov(Sepal.Width ~ Species, data=iris)
             
@@ -499,9 +496,8 @@ summary(result)
             
             summary(model)  # <2e-16 ***    세 집단은 차이를 보인다! 
             
-            
             # 사후검정
-            TukeyHSD(model)            
+            plot(TukeyHSD(model))
             
             
         # (2)
