@@ -1,0 +1,121 @@
+﻿#  2. 패키지 이용 기술통계량 구하기
+
+########################<기술통계 패키지1>#########################
+# 패키지 : Hmisc -> 기능을 구현해 놓은 패키지
+install.packages("Hmisc") # 웹사이트 접속하여 패키지 설치
+library(Hmisc) # 해당 패키지를 메모리 로딩
+
+# 전체 변수 대상 기술통계량 제공 - 빈도와 비율 데이터 일괄 수행
+describe(data) # Hmisc 패키지에서 제공되는 함수
+# 명목,서열,등간척도 - n, missing,unique, 빈도수,비율
+# 비율척도 - n, missing, unique, mean, lowest, highest
+
+# 개별 변수 기술통계량
+describe(data$gender) # 특정 변수(명목) 기술통계량 - 비율 제공
+describe(data$age) # 특정 변수(비율) 기술통계량 - lowest, highest
+
+summary(data$age)
+################################################################
+
+########################<기술통계 패키지2>#########################
+# 기술통계패키지(Hmisc 보다 유용)
+install.packages("prettyR")
+library(prettyR)
+
+# 전체 변수 대상      
+freq(data) # 각 변수별 : 빈도, 결측치, 백분율, 특징-소수점 제공
+# 개별 변수 대상
+freq(data$gender) # 빈도와 비율 제공
+################################################################
+
+
+#  3. 기술통계량 보고서 작성법
+
+# 1) 거주지역 
+data$resident2[data$resident == 1] <-"특별시"
+data$resident2[data$resident >=2 & data$resident <=4] <-"광역시"
+data$resident2[data$resident == 5] <-"시구군"
+
+x<- table(data$resident2)
+x
+prop.table(x) # 비율 계산 : 0< x <1 사이의 값
+y <-  prop.table(x)
+round(y*100, 2) #백분율 적용(소수점 2자리)
+#광역시 시구군 특별시 
+#37.66  14.72  47.62
+
+# 2) 성별
+data$gender2[data$gender== 1] <-"남자"
+data$gender2[data$gender== 2] <-"여자"
+x<- table(data$gender2)
+x
+prop.table(x) # 비율 계산 : 0< x <1 사이의 값
+y <-  prop.table(x)
+round(y*100, 2) #백분율 적용(소수점 2자리)
+#남자  여자 
+#58.87 41.13
+
+# 3) 나이
+summary(data$age)# 40 ~ 69
+data$age2[data$age <= 45] <-"중년층"
+data$age2[data$age >=46 & data$age <=59] <-"장년층"
+data$age2[data$age >= 60] <-"노년층"
+x<- table(data$age2)
+x
+prop.table(x) # 비율 계산 : 0< x <1 사이의 값
+y <-  prop.table(x)
+round(y*100, 2) #백분율 적용(소수점 2자리)
+#노년층 장년층 중년층 
+#24.60  68.15   7.26
+
+# 4) 학력수준
+data$level2[data$level== 1] <-"고졸"
+data$level2[data$level== 2] <-"대졸"
+data$level2[data$level== 3] <-"대학원졸"
+
+x<- table(data$level2)
+x
+prop.table(x) # 비율 계산 : 0< x <1 사이의 값
+y <-  prop.table(x)
+round(y*100, 2) #백분율 적용(소수점 2자리)
+#고졸     대졸 대학원졸 
+#39.41    36.44    24.15
+
+# 5) 합격여부
+data$pass2[data$pass== 1] <-"합격"
+data$pass2[data$pass== 2] <-"실패"
+x<- table(data$pass2)
+x
+prop.table(x) # 비율 계산 : 0< x <1 사이의 값
+y <-  prop.table(x)
+round(y*100, 2) #백분율 적용(소수점 2자리)
+#실패  합격 
+#40.85 59.15
+
+head(data)
+# data Mart
+--------------------------------------------------------------------------------
+  # resident   gender      age	  level	     cost	   type    	 survey	   pass
+  # 거주지역   성별       나이  학력수준     생활비  학교유형  만족도    합격여부
+  # 명목(1~3)  명목(1,2)  비율  서열(1,2,3)  비율    명목(1,2) 등간(5점) 명목(1,2)
+  ---------------------------------------------------------------------------------  
+  
+  # <논문/보고서 에서 표본의 인구통계적특성 결과 제시 방법>
+ 
+length(data$cost) # 248 
+describe(data)
+summary(data$cost) 
+# Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+# 2.100   4.600   5.400   5.361   6.200   7.900 
+sum(data$cost) # 1345.5
+
+length(data$survey) # 248
+describe(data)
+summary(data$survey) 
+sum(data$survey, na.rm=T) # 424
+
+# 기술통계량 정제 데이터 저장 
+getwd()
+setwd("c:/Rwork/Part-III")
+
+write.csv(data,"cleanDescriptive.csv", quote=F, row.names=F) # 행 이름 제거

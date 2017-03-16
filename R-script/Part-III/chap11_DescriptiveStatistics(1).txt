@@ -1,0 +1,159 @@
+﻿########################################
+## chap11_Descriptive Statistics 수업내용
+########################################
+
+# 기술통계(Descriptive Statistics) 
+# 대푯값 : 평균(Mean), 합계(Sum), 중위수(Median), 최빈수(mode), 사분위수(quartile) 등
+# 산포도 : 분산(Variance), 표준편차(Standard deviation), 최소값(Minimum), 최대값(Maximum), 범위(Range) 등 
+# 비대칭도 : 왜도(Skewness), 첨도(Kurtosis)
+
+
+# - 실습파일 가져오기
+getwd()
+setwd("c:/Rwork/Part-III")
+data <- read.csv("descriptive.csv", header=TRUE)
+head(data) # 데이터셋 확인
+
+# 인구통계학변수 : 성장하면서 갖추어지는 변수
+
+
+# 1. 척도별 기술통계량
+#  - 데이터 특성 보기(전체 데이터 대상)
+dim(data) # 행(300)과 열(8) 정보 - 차원보기
+length(data) # 열(8) 길이
+length(data$survey) #survey 컬럼의 관찰치 - 행(300) 
+
+str(data) # 데이터 구조보기 -> 데이터 종류,행/열,data
+str(data$survey) 
+
+# 데이터 특성(최소,최대,평균,분위수,노이즈-NA) 제공
+summary(data) 
+
+# 1) 명목척도 변수의 기술통계량
+# - 명목상 의미없는 수치로 표현된 변수 - 성별(gender)     
+length(data$gender)
+summary(data$gender) # 최소,최대,중위수,평균-의미없음
+table(data$gender) # 각 성별 빈도수 - outlier 확인-> 0, 5
+
+data <- subset(data,data$gender == 1 | data$gender == 2) # 성별 outlier 제거
+x <- table(data$gender) # 성별에 대한 빈도수 저장
+x # outlier 제거 확인
+barplot(x) # 범주형(명목/서열척도) 시각화 -> 막대차트
+
+prop.table(x) # 비율 계산 : 0< x <1 사이의 값
+y <-  prop.table(x)
+round(y*100, 2) #백분율 적용(소수점 2자리)
+
+# 2) 서열척도 변수의 기술통계량
+# - 계급순위를 수치로 표현한 변수 - 학력수준(level)
+length(data$level) # 학력수준 - 서열
+summary(data$level) # 명목척도와 함께 의미없음
+table(data$level)  # 빈도분석 - 의미있음
+
+x1 <- table(data$level) # 각 학력수준에 빈도수 저장
+x1
+barplot(x1) # 명목/서열척도 -> 막대차트
+
+# 3) 등간척도 변수의 기술통계량
+# - 속성의 간격이 일정한 변수(survey) - 덧셈/뺄셈 연산 가능
+survey <- data$survey
+survey
+
+summary(survey) # 만족도(5점 척도)인 경우 의미 있음 -> 2.6(평균이상)
+x1<-table(survey) # 빈도수
+x1
+#1  2  3  4  5 
+#20 72 61 25  7
+
+hist(survey) # 등간척도 시각화 -> 히스토그림
+pie(x1)
+
+# 4) 비율척도 변수의 기술통계량
+# - 수치로 직접 입력한 변수(cost)  
+length(data$cost)
+summary(data$cost) # 요약통계량 - 의미있음(mean) - 8.784
+mean(data$cost) # NA
+data$cost
+
+# 데이터 정제 - 결측치 제거 및 outlier 제거
+plot(data$cost)
+data <- subset(data,data$cost >= 2 & data$cost <= 10) # 총점기준
+data
+x <- data$cost
+x
+
+##### cost 변수의 대푯값 ####
+mean(x) # 평균 : 5.354
+# 평균이 극단치에 영향을 받는 경우 - 중위수(median) 대체
+median(x) # 5.4  
+min(x)
+max(x)
+range(x) # min ~ max
+sort(x) # 오름차순 
+sort(x, decreasing=T) # 내림차순  
+
+#### cost 변수의 산포도 #####
+var(x) # 분산
+sd(x) # 표준편차는 분t산의 양의 제곱근
+
+quantile(x, 1/4) # 1 사분위수 - 25%, 4.6
+quantile(x, 3/4) # 3 사분위수 - 75%, 6.2
+
+min(x) # 최소값
+max(x) # 최대값
+range(x) # 범위(min ~ max)
+#########################
+
+
+# 5) 패키지를 이용한 산포도 나타내기
+install.packages("moments")  # 왜도/첨도 위한 패키지 설치   
+library(moments)
+cost <- data$cost # 정제된 data
+cost
+# 왜도 - 평균을 중심으로 기울어진 정도
+skewness(cost) # 0.2974908 
+
+#첨도 - 표준정규분포와 비교하여 얼마나 뽀족한가 측정 지표
+kurtosis(cost) # 2.683438     
+
+# 기본 히스토그램 
+hist(cost)
+
+# 히스토그램 확률밀도/표준정규분포 곡선 
+hist(cost, freq = F)
+# 확률밀도 분포 곡선 
+lines(density(cost), col='blue')
+# 표준정규분포 곡선 
+x <- seq(0, 8, 0.1)
+curve( dnorm(x, mean(cost), sd(cost)), col='red', add = T)
+
+# cost 비율척도 변수의 기술통계
+attach(data) #data를 붙여라! -> data$ 생략     
+length(cost)
+summary(cost) # 요약통계량 - 의미있음(mean)
+mean(cost) # 가장 의미있음
+min(cost)
+max(cost)
+range(cost) # min ~ max
+sd<- sd(cost, na.rm=T)
+var(cost, na.rm=T)
+sqrt(var(cost, na.rm=T))
+sd(cost, na.rm=T)
+
+shapiro.test(cost)
+
+sort(cost) # 오름차순 
+sort(cost, decreasing=T) # 내림차순
+detach(data) # attach(data) 해제
+
+# NA가 있으면 error 발생 함수
+test <-c(1:5,NA,10:20)
+min(test) # NA 출력
+max(test) # NA 출력
+range(test) # NA 출력
+mean(test) # NA 출력     
+# 결측치 데이터 제거 후 통계량 구함
+min(test, na.rm=T) # na.rm=T 결측데이터 제거 방법1
+max(test, na.rm=T)
+range(test, na.rm=T) 
+mean(test, na.rm=T)

@@ -1,0 +1,208 @@
+﻿###########################################
+# 3. ggplot2 패키지
+###########################################
+# ggplot2 그래픽 패키지
+# 기하학적 객체들(점,선,막대 등)에 미적 특성(색상, 모양,크기)를 
+# 맵핑하여 플로팅한다.
+# 그래픽 생성 기능과 통계변환을 포함할 수 있다.
+# ggplot2의 기본 함수 qplot()
+# geoms(점,선 등) 속성, aes(크기,모양,색상) 속성 사용
+# dataframe 데이터셋 이용(변환 필요)
+###########################################
+
+
+install.packages("ggplot2") # 패키지 설치
+library(ggplot2)
+
+data(mpg) # 데이터 셋 가져오기
+str(mpg) # map 데이터 셋 구조 보기
+head(mpg) # map 데이터 셋 내용 보기 
+summary(mpg) # 요약 통계량
+table(mpg$drv) # 구동방식 빈도수 
+################ mpg 데이터셋 #################
+# ggplot2에서 제공하는 데이터셋
+# 'data.frame':	234 obs. of  11 variables:
+# 주요 변수 : displ:엔진크기, cyl : 실린더수,
+#      drv(구동방식) ->사륜구동(4), 전륜구동(f), 후륜구동(r)
+###################################################
+
+
+# 1. ggplot()함수
+help(qplot)
+
+# (1) 1개 변수 대상 기본 - 속이 꼭찬 막대 모양의 세로막대 그래프 
+qplot(hwy, data=mpg) # 세로막대 그래프
+#  fill 옵션 : hwy 변수를 대상으로 drv변수에 색 채우기(누적 막대그래프) 
+qplot(hwy, data=mpg, fill=drv) # fill 옵션 적용
+# binwidth 옵션 : 막대 폭 지정 옵션
+qplot(hwy, data=mpg, fill=drv, binwidth=2) # binwidth 옵션 적용 
+# facets 옵션 : drv변수 값으로 칼럼단위와 행 단위로 패널 생성
+qplot(hwy, data=mpg, fill=drv, facets=.~ drv, binwidth=2) # 열 단위 패널 생성
+qplot(hwy, data=mpg, fill=drv, facets=drv~., binwidth=2) # 행 단위 패널 생성
+
+
+# (2) 2변수 대상 기본 - 속이 꽉찬 점 모양과 점의 크기는 1를 갖는 산점도 그래프
+qplot(displ, hwy, data=mpg)# mpg 데이터셋의 displ과 hwy변수 이용
+# displ, hwy 변수 대상으로 drv변수값으로 색상 적용 산점도 그래프
+qplot(displ, hwy, data=mpg, color=drv)
+
+
+# <실습> 엔진크기와 고속도로 주행속도와의 관계를 구동방식으로 구분
+qplot(displ, hwy, data=mpg, color=drv, facets=.~ drv)
+# mpg 데이터셋의 displ과 hwy변수 이용
+
+# (3) 색상, 크기, 모양 적용
+### ggplot2 패키지 제공 데이터 셋
+head(mtcars)
+str(mtcars) # ggplot2에서 제공하는 데이터 셋
+qplot(wt, mpg, data=mtcars, color=factor(carb)) # 색상 적용
+qplot(wt, mpg, data=mtcars, size=qsec, color=factor(carb)) # 크기 적용
+qplot(wt, mpg, data=mtcars, size=qsec, color=factor(carb), shape=factor(cyl))#모양 적용 
+mtcars$qsec
+
+
+# (4) geom 옵션 
+### ggplot2 패키지 제공 데이터 셋
+head(diamonds) 
+
+# geom="bar" -> clarity변수 대상 cut변수로 색 채우기
+qplot(clarity, data=diamonds, fill=cut, geom="bar") # 레이아웃에 색 채우기
+qplot(clarity, data=diamonds, colour=cut, geom="bar") # 테두리 색 적용
+
+
+# geom="point"
+# qplot(wt, mpg, data=mtcars, size=qsec) # geom="point" 기본
+qplot(wt, mpg, data=mtcars, size=qsec, geom="point")
+# cyl 변수의 요인으로 point 크기 적용, carb 변수의 요인으로 포인트 색 적용
+qplot(wt, mpg, data=mtcars, size=factor(cyl), color=factor(carb), geom="point")
+# qsec변수로 포인트 크기 적용, cyl 변수의 요인으로 point 모양 적용
+qplot(wt, mpg, data=mtcars, size=qsec, color=factor(carb), shape=factor(cyl), geom="point")
+
+# geom="smooth"
+qplot(wt, mpg, data=mtcars, geom=c("point", "smooth"))
+qplot(wt, mpg, data=mtcars, color=factor(cyl), geom=c("point", "smooth"))
+# cyl변수 요인으로 색상 적용
+
+
+# geom="line"
+qplot(mpg, wt, data=mtcars, color=factor(cyl), geom="line")
+#qplot(mpg, wt, data=mtcars, color=factor(cyl), geom="point") + geom_line()
+# [실습] 결과 동일
+#qplot(mpg, wt, data=mtcars, color=factor(cyl), geom=c("point","line"))
+
+#  geom="freqpoly"
+qplot(clarity, data=diamonds, geom="freqpoly", group=cut, colour=cut)
+
+# (5) position 옵션 
+# 다양한 bar 차트 유형("identity",stacked, dodged, identity)
+head(diamonds)
+# 채우기-가장 큰 값을 기준으로 채우기형 막대그래프
+qplot(clarity, data=diamonds, geom="bar", fill=cut, position="identity")
+# 채우기-가장 적은 값을 기준으로 채우기형 막대그래프 
+qplot(clarity, data=diamonds, geom="bar", fill=cut, position="fill")
+# 스택형태-누적형-기본형
+qplot(clarity, data=diamonds, geom="bar", fill=cut, position="stack")
+# 다지-살짝 비키다
+qplot(clarity, data=diamonds, geom="bar", fill=cut, position="dodge")
+
+
+# (6) group+position+geom=freqpoly
+
+# clarity변수를 대상으로 cut으로 그룹화하여 발생빈도를 다각형으로 플로팅    
+qplot(clarity, data=diamonds, geom="freqpoly", 
+    group=cut, colour=cut, position="identity") # 개별형
+qplot(clarity, data=diamonds, geom="freqpoly", 
+    group=cut, colour=cut, position="stack") # 누적형
+
+
+# 2. ggplot()함수
+
+# (1) aes(x,y,color) 옵션 
+# aes(x,y,color) 속성 = aesthetics : 미학
+p <-ggplot(diamonds, aes(carat, price, color=cut))
+p + layer(geom="point")
+
+#geom_point()함수 - 결과 동일 
+p<-ggplot(diamonds, aes(carat, price, color=cut))
+p+geom_point()  # point 추가
+
+
+# (2) geom_line() 레이어 추가 
+p<- ggplot(mtcars, aes(mpg,wt,color=factor(cyl)))
+p+geom_line() # line 추가
+
+# (3) geom_point()함수  레이어 추가
+p<- ggplot(mtcars, aes(mpg,wt,color=factor(cyl)))
+p+geom_point()  # point 추가
+
+# (4) geom_step() 레이어 추가
+p<- ggplot(mtcars, aes(mpg,wt,color=factor(cyl)))
+p+geom_step()  # step 추가
+
+# (5) geom_bar() 레이어 추가
+p<- ggplot(diamonds, aes(clarity))
+p+geom_bar(aes(fill=cut), position="fill")  # bar 추가
+
+
+## create a pie-chart(파이 차트), radar-chart(레이더 차트) (hint: not recommended)
+# map a barchart to a polar coordinate system
+p.tmp <- ggplot(mtcars, aes(x=factor(1), fill=factor(cyl))) + geom_bar(width=1)
+p.tmp
+p.tmp + coord_polar(theta="y")
+p.tmp + coord_polar()
+ggplot(mtcars, aes(factor(cyl), fill=factor(cyl))) + geom_bar(width=1) + coord_polar()
+#########################################################
+
+# (6) stat_bin() : ggplot() 결과 미적요소와 기하객체를 추가 역할
+p <- ggplot(diamonds, aes(price)) 
+
+p + stat_bin(aes(fill=cut), geom="bar")
+p + stat_bin(aes(fill=..density..), geom="bar") # price 빈도를 밀도(전체의 합=1)로 스케일링 
+p + stat_bin(aes(fill=cut), geom="area")
+p + stat_bin(aes(color=cut, size=..density..),geom="point") 
+
+# (7) Theme
+#테마의 각각의 요소들은 특정한 상속 관계에 의해서 상속되어 진다.
+p <- ggplot(diamonds, aes(carat, price, color=cut)) 
+p <- p + geom_point() 
+print(p) # 테마가 적용될 산점도 그래프 
+
+p + theme_gray() # 기본 테마
+p + theme_bw() # 흰색 
+p + theme_bw(18) # 크게
+p + theme_classic() # 고전
+p + theme_minimal() # 고전 + 격자
+
+# (8) 제목 추가, 외형 속성 설정  
+p <- ggplot(diamonds, aes(carat, price, color=cut)) 
+p <- p + geom_point() + ggtitle("다이아몬드 무게와 가격의 상관 관계") 
+print(p) # 제목이 적용된 산점도 그래프 
+
+ 
+# 그래프 외형 속성 설정
+p + theme(
+        title=element_text(color="blue", size=25),
+        axis.title=element_text(size=14, face="bold"), #축 제목
+        axis.title.x=element_text(color="green"), #x축 제목
+        axis.title.y=element_text(color="green"), #y축 제목
+        axis.text=element_text(size=14),   # 축이름 크기
+        axis.text.y=element_text(color="red"),   # y축 이름 
+        axis.text.x=element_text(color="purple"),  # x축 이름
+        legend.title=element_text(size=20, face="bold",color="red"), #범례 
+        legend.position="bottom",  # 범례 위치
+        legend.direction="horizontal" # 방향
+) 
+
+
+# 3. ggsave()함수 
+# save image of plot on disk 
+#geom_point()함수 - 결과 동일 
+p<-ggplot(diamonds, aes(carat, price, color=cut))
+p+geom_point()  # point 추가
+ggsave(file="C:/Rwork/output/diamond_price.pdf") # 가장 최근 그래프 저장
+ggsave(file="C:/Rwork/output/diamond_price.jpg", dpi=72)
+
+# 변수에 저장된 그래프 저장 
+p<- ggplot(diamonds, aes(clarity))
+p<- p+geom_bar(aes(fill=cut), position="fill")  # bar 추가
+ggsave(file="C:/Rwork/output/bar.png", plot=p, width=10, height=5)

@@ -1,0 +1,30 @@
+﻿# Formal(3_Mongo_DB)
+# - MongoDB(NoSQL) 데이터 처리
+
+
+# 패키지 설치 
+install.packages('RMongo')
+
+# 패키지 로딩
+library(rJava)
+library(RMongo) # Loading required package: rJava
+# MongoDB에 접속하기 위한 패키지 로더
+
+
+####################################
+# 1. MongoDB에서 특정 DB 연결 
+####################################
+
+# mongoDbConnect(dbName, host="127.0.0.1", port=27017)
+mongo <-mongoDbConnect('local',host="127.0.0.1", port=27017) # local DB 연결  
+
+
+# 전체문서 조회 - dbGetQuery(conn, collection, query, skip=0, limit=1000) 
+result <-dbGetQuery(mongo, "startup_log", "") # startup_log 컬렉션 전체 검색 
+result # starup_log 컬렉션에서 12개의 Document 검색
+
+# DB 연결 해제 
+dbDisconnect(mongo)
+
+
+

@@ -1,0 +1,201 @@
+﻿##########################################
+# 4. ggmap 패키지
+##########################################
+#공간시각화
+# 공간 시각화는 지도를 기반으로 하기 때문에 
+# 위치, 영역, 시간과 공간에 따른 차이 및 변화에 대한것을 다룸
+# 위치특징 : 위도 및 경도, 지도에 버블로 표현
+# 표현방법 : 레이어 형태로 추가하여 시각화
+# 영역 : 데이터에 따른 색상으로 표현
+##########################################         
+
+#geocode : 거리주소 또는 장소 이름을 이용하여 이용 지도 정보(위도, 경도) 획득 
+#get_googlemap :  구글 지도 서비스(Google Static Maps) API에 접근하여 정적 지도 다운로드 
+#get_map : 지도 서비스 관련 서버(GoogleMaps, OpenStreetMap, StamenMapsor, Naver Map)에 
+# 관련된 질의어를 지능형으로 인식하여 지도 정보 생성
+#get_navermap:네이버 지도 서비스(Naver Static Maps) API에 접근하여 정적 지도 다운로드 지원
+#ggimage : ggplot2 이미지와 동등한 수준으로 지도 이미지 생성
+# ggmap  : get_map()함수에 의해서 생성된 픽셀 객체를 지도 이미지로 시각화
+# ggmapplot :get_map()함수에 의해서 생성된 픽셀 객체를 지도 이미지로 시각화
+#qmap : ggmap()함수와 get_map() 함수의 통합 기능
+#qmplot : ggplot2패키지의 qplot()와 동등한 수준으로 빠르게 지도 이미지 시각화
+
+#---------ggmap()과 ggmapplot()함수 옵션 차이점
+ggmap(ggmap, extent = "panel", base_layer, maprange = FALSE, 
+    legend = "right", padding = 0.02, darken = c(0, "black"), ...)
+ggmapplot(ggmap, fullpage = FALSE, base_layer, maprange = FALSE, 
+expand = FALSE, ...)
+
+#----------------------------------------------
+
+#[실습1] geocode(), get_googlemap()함수
+# 지도 관련 패키지 설치
+install.packages("ggplot2")
+install.packages("stringr")
+library(stringr)
+library(ggplot2)
+install.packages("ggmap") # ‘ggmap’와 ‘ggplot2’(우선 설치) 관련 패키지
+library(ggmap)
+#-----------------[그림 12-3]---------------
+map <- get_map(location ="seoul", zoom=10, maptype='roadmap', source = "google")
+ggmap(map, size=c(600,400), extent='device')
+#-------------------------------------------
+#  지도위치정보를 이용하여 지도정보를 생성하고, 지도 이미지 그리기  
+#(e.g. "1600 pennsylvania avenue, washington dc" or "Baylor University") 
+# (1) 지도위치정보 가져오기
+gc <- geocode("seoul")
+#gc <- geocode("seoul, korea") # geolocation API 이용 
+gc <- geocode("waco, texas") # texas주 중부 도시
+center <- as.numeric(gc)
+center # 위도,경도
+#[1] 126.97797  37.56654
+
+#(2) 지도 정보 생성하기
+map <- get_googlemap(center = center, language="ko-KR", color = "bw", scale = 2 )
+# bw :  black-and-white - 흰색 바탕에 검은색 글자
+# scale :  1, 2, or 4 (scale = 2 : 1280x1280 pixels) 
+
+# (3) 지도 이미지 그리기
+ggmap(map, extent = 'device')
+# extent : 지도가 그려질 크기를 지정하는 옵션
+#  ("normal", "device", or "panel" (default))
+
+# [실습2] round(), get_googlemap()함수
+# (1) markers 데이터프레임 생성 -> round 적용 
+df <- round(data.frame( x = jitter(rep(-95.36, 25), amount = .3), 
+        y = jitter(rep(29.76, 25), amount = .3) ), digits = 2)
+df
+
+# (2) 지도 위에 markers 적용 
+map <- get_googlemap('houston', markers = df, path = df, scale = 2)
+ggmap(map, extent = 'device')
+
+# [실습2] get_googlemap() vs get_map함수
+# (1) get_googlemap() 지도 이미지 그리기
+#get_googlemap(center, zoom, size, scale, format, maptype, language,color, markers, path)
+map <- get_googlemap('seoul',  scale = 2)
+ggmap(map, extent = 'device')
+
+# (2) get_map() 지도 이미지 그리기-다양한 지도 유형 제공
+#get_map(center, zoom, scale, maptype, source, color, language, api_key) 
+map <- get_map('seoul',  scale = 2)
+ggmap(map, extent = 'device')
+
+
+#[실습3] get_map함수
+map <- get_map(location ="london", zoom=14, maptype='roadmap', scale=2)
+# get_map("중심지역", 확대비율, 지도유형) : ggmap에서 제공하는 함수 
+ggmap(map, size=c(600,600), extent='device')
+
+map <- get_map(location ="seoul", zoom=8, maptype='watercolor', scale=2)
+ggmap(map, size=c(600,600), extent='device')
+
+# zoom 차이
+map <- get_map(location ="seoul", zoom=14, scale=2)
+map <- get_map(location ="seoul", zoom=8, scale=2)
+ggmap(map, size=c(600,600), extent='device')
+
+# source 차이
+map <- get_map(location = "texas", zoom = 6, source = "stamen")
+# stamen : maptype='satellite' 지원 안됨
+map <- get_map(location ="seoul", source = "osm", zoom=8, maptype='watercolor')
+ggmap(map, size=c(600,600), extent='device')
+map <- get_map(location = "seoul",zoom=14)
+ggmap(map, size=c(600,600), extent='device')
+
+
+# 실습 데이터-서울지역 4년제 대학교 위치 표시
+university <- read.csv("C:/Rwork/Part-III/university.csv",header=T)
+university # # 학교명","LAT","LON"
+
+# (1)레이어1 : 정적 지도 생성
+kor <- get_map("seoul", zoom=11, maptype = "watercolor")#roadmap
+# maptype : roadmap, satellite, terrain, hybrid
+
+# (2)레이어2 : 지도위에 포인트
+ggmap(kor)+geom_point(data=university, aes(x=LON, y=LAT,color=factor(학교명)),size=3)
+kor.map <- ggmap(kor)+geom_point(data=university, aes(x=LON, y=LAT,color=factor(학교명)),size=3)
+
+# (3)레이어3 : 지도위에 텍스트 추가
+kor.map + geom_text(data=university, aes(x=LON+0.01, y=LAT+0.01,label=학교명),size=5)
+# LAT+0.01 : 텍스트 위치(포인트의 0.01 위쪽)
+# geom_text : 텍스트 추가
+
+# (4)지도 저장
+# 넓이, 폭 적용 파일 저장
+ggsave("C:/Rwork/output/university1.png",width=10.24,height=7.68)
+# 밀도 적용 파일 저장
+ggsave("C:/Rwork/output/university2.png",dpi=1000) # 9.21 x 7.68 in image
+
+#<공간시각화 실습>
+
+# 2015년도 06월 기준 대한민국 인구수
+pop <- read.csv("C:/Rwork/Part-III/population201506.csv",header=T)
+pop
+
+region <- pop$지역명   
+lon <- pop$LON # 위도
+lat <- pop$LAT # 경도
+house <- pop$세대수
+
+# 위도,경도,세대수 이용 데이터프레임 생성
+df <- data.frame(region, lon,lat,house)
+df
+# 지도정보 생성
+map1 <- get_map("daegu", zoom=7 ,  maptype='watercolor')
+#map1 <- get_map("daegu", zoom=7 ,  maptype='roadmap')
+
+# 레이어1: 지도 플로팅
+map2 <- ggmap(map1)
+map2
+
+# 레이어2 : 포인트 추가
+map2 + geom_point(aes(x=lon,y=lat,colour=house,size=house),data=df)
+map3 <- map2 + geom_point(aes(x=lon,y=lat,colour=house,size=house),data=df)
+
+# 레이어3 : 텍스트 추가
+map3 + geom_text(data=df, aes(x=lon+0.01, y=lat+0.18,label=region),size=3)
+
+# 크기, 넓이, 폭 적용 파일 저장
+ggsave("C:/Rwork/output/population201506.png",scale=1,width=10.24,height=7.68)
+
+# [실습] 세종 자치시 추가
+#---------------------------------------------------
+
+# 다양한 지도 유형
+
+# maptype='terrain'
+map1 <- get_map("daegu", zoom=7 ,  maptype='terrain')
+map2 <- ggmap(map1)
+map3 <- map2 + geom_point(aes(x=lon,y=lat,colour=house,size=house),data=df)
+map3 + geom_text(data=df, aes(x=lon+0.01, y=lat+0.18,label=region),size=3)
+
+
+# maptype='satellite'
+map1 <- get_map("daegu", zoom=7 ,  maptype='satellite')
+map2 <- ggmap(map1)
+map3 <- map2 + geom_point(aes(x=lon,y=lat,colour=house,size=house),data=df)
+map3 + geom_text(data=df, aes(x=lon+0.01,y=lat+0.18,colour=region,label=region),size=3)
+
+# maptype='roadmap'
+map1 <- get_map("daegu", zoom=7 ,  maptype='roadmap')
+map2 <- ggmap(map1)
+map3 <- map2 + geom_point(aes(x=lon,y=lat,colour=house,size=house),data=df)
+map3 + geom_text(data=df, aes(x=lon+0.01, y=lat+0.18,label=region),size=3)
+
+# maptype='hybrid'
+map1 <- get_map("jeonju", zoom=7,  maptype='hybrid')
+map2 <- ggmap(map1)
+map3 <- map2 + geom_point(aes(x=lon,y=lat,colour=house,size=house),data=df)
+map3 + geom_text(data=df, aes(x=lon+0.01, y=lat+0.18,label=region),size=3)
+map3 + geom_density2d()
+# 밀도레이어 그래프 추가(geom_density2d)
+
+# ---------------------------------------------------------------------
+# stat_bin2d() : 버블모양 적용함수, 인구수(data) 기준 색 적용(많이 사용)
+map1 <- get_map("jeonju", zoom=7 ,  maptype='hybrid')
+map2 <- ggmap(map1)
+map2 + stat_bin2d(aes(x=lon,y=lat,colour=house,fill=factor(house),size=house),data=df)
+
+
+

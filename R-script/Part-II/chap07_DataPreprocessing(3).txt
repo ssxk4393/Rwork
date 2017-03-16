@@ -1,0 +1,43 @@
+﻿# 7. 표본 셈플링
+# - 전체 데이터 셋을 대상으로 무작위(random)로 관측치를 추출하는 방법  
+
+choice <- sample(c(1:100), 30) # 1~100
+choice # 30개 랜덤 추출 
+
+# 1) 행 번호 추출 
+idx <- sample(1:nrow(user_pay_data),30) # 30개 무작위 추출
+idx # 추출값 : 행 번호
+
+# 2) 관측치 추출 
+result <- user_pay_data[idx, ]
+result
+
+
+#다양한 범위를 지정해서 무작위 셈플링
+choice2 <- sample(c(10:50, 70:150, 160:190),30)
+choice2
+
+
+# iris 데이터셋을 대상으로 7:3 비율로 훈련데이터와 검정데이터 셋 생성하기 
+iris
+str(iris) # 'data.frame':	150 obs. of  5 variables:
+
+idx <- sample(1:nrow(iris), nrow(iris) * 0.7)
+train <- iris[idx, ] # 70%
+test <- iris[-idx, ] # 30%
+dim(train) # 105   5
+dim(test) # 45  5
+
+LETTERS # A ~ Z
+letters # a ~ z
+x <- runif(2600000, min = 0, max = 100)
+y <- rep(LETTERS, each=100000)
+df <- data.frame(x, y)
+head(df)
+tail(df)
+dim(df) # 2600000     2
+
+# df 대상으로 50개만 샘플링하여 영문자 빈도수를 pie 차트로 시각화 
+idx <- sample(nrow(df), 50)
+test <- df[idx, ]
+pie(table(test$y))
