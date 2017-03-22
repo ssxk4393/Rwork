@@ -231,34 +231,34 @@ str(AdultUCI) # 'data.frame':	48842 obs. of  15 variables:
 names(AdultUCI)
 
 # 데이터 샘플링 - 10,000개 관측치 선택 
-set.seed(1234) # 메모리에 시드 값 적용
-choice <- sample(1:nrow(AdultUCI), 10000)
-choice
-adult.df <-  AdultUCI[choice, ]  
-str(adult.df) # ' # 'data.frame':	10000 obs. of  15 variables:
+    set.seed(1234) # 메모리에 시드 값 적용
+    choice <- sample(1:nrow(AdultUCI), 10000)
+    choice
+    adult.df <-  AdultUCI[choice, ]  
+    str(adult.df) # ' # 'data.frame':	10000 obs. of  15 variables:
 
 # 변수 추출 및 데이터 프레임 생성
 # (1) 변수 추출
-capital<- adult.df$`capital-gain`
-hours<- adult.df$`hours-per-week`
-education <- adult.df$`education-num`
-race <- adult.df$race
-age <- adult.df$age
-income <- adult.df$income
+    capital<- adult.df$`capital-gain`
+    hours<- adult.df$`hours-per-week`
+    education <- adult.df$`education-num`
+    race <- adult.df$race
+    age <- adult.df$age
+    income <- adult.df$income
 
 # (2) 데이터프레임 생성
-adult_df <- data.frame(capital=capital, age=age, race=race, hours=hours, education=education, income=income)
-str(adult_df) # 'data.frame':	10000 obs. of  6 variables:
+    adult_df <- data.frame(capital=capital, age=age, race=race, hours=hours, education=education, income=income)
+    str(adult_df) # 'data.frame':	10000 obs. of  6 variables:
 
-# formula 생성 - 자본이득(capital)에 영향을 미치는 변수 
-formula <-  capital ~ income + education + hours + race + age
-
-# ctree() : 분류모델 생성 및 예측
-adult_ctree <- ctree(formula, data=adult_df)
-adult_ctree # 가장 큰 영향을 미치는 변수 - income, education
-
-# 분류모델 플로팅
-plot(adult_ctree)
+    # formula 생성 - 자본이득(capital)에 영향을 미치는 변수 
+    formula <-  capital ~ income + education + hours + race + age
+    
+    # ctree() : 분류모델 생성 및 예측
+    adult_ctree <- ctree(formula, data=adult_df)
+    adult_ctree # 가장 큰 영향을 미치는 변수 - income, education
+    
+    # 분류모델 플로팅
+    plot(adult_ctree)
 
 # <해설> 자본이득(capital)에 가장 큰 영향을 미치는 변수는 income이고, 
 # 두 번째는 education 변수이다. 
@@ -266,3 +266,156 @@ plot(adult_ctree)
 
 
 
+
+###############################################################################
+
+######------------------------###### (2) ######--------------------------######
+
+###############################################################################
+    
+# y변수가 범주형인 경우
+# ctree() : y변수의 범주로 예측 -> setosa versicolor virginica
+# rpart() : y변수의 비율 예측 ->    0.85     0.001     0.13014
+
+
+
+#단계1 : 학습데이터와 검증데이터 샘플링
+    idx <- sample(1:nrow(iris), nrow(iris) * 0.7) 
+    train <- iris[idx,] 
+    test <- iris[-idx,]  
+    
+# 단계2 : formula 생성 
+    #  -> 형식) 변수 <- 종속변수 ~ 독립변수
+    formula <- Species ~ Sepal.Length+Sepal.Width+Petal.Length+Petal.Width 
+
+
+#단계3 : 학습데이터 이용 분류모델 생성(ctree()함수 이용)
+    iris_ctree <- ctree(formula, data=train) # 학습데이터로 분류모델(tree) 생성
+    iris_rpart <- rpart(formula, data=train)
+
+# 단계4 : 예측치 생성(검정데이터)
+    pred <- predict(iris_ctree, test)
+    table(pred, test$Species)
+    # pred         setosa versicolor virginica
+    # setosa         10          0         0
+    # versicolor      0         18         2
+    # virginica       0          1        14
+    
+    pred2 <- predict(iris_rpart, test)
+    pred2
+    str(pred2)
+    
+    cpred2 <- ifelse(pred2[,1]>=0.5, 'setosa', ifelse(pred2[,2]>=0.5, 'versicolor', 'virginica'))
+    
+    table(cpred2, test$Species)
+    # cpred2       setosa versicolor virginica
+    # setosa         10          0         0
+    # versicolor      0         18         2
+    # virginica       0          1        14
+
+
+
+##########################################################
+##########################################################
+
+        # rpart 패키지 적용 분류분석
+
+##########################################################
+##########################################################
+
+## 1. rpart()함수 간단 실습 
+    install.packages("rpart")
+    library(rpart)
+    
+    X11() # 별도창 
+    formula <- Species ~ .
+    iris.df <- rpart(formula, data=iris)
+    iris.df  
+    plot(iris.df ) # 트리 프레임 보임
+    text(iris.df, use.n = T, cex=0.6) # 텍스트 추가
+    post(iris.df, file="")
+    ?text
+    # <해석>
+    # iris의 Species(꽃의 종류)변수를 분류하는 가장 중요한 변수는 
+    # Petal.Length와 Petal.Width로 나타난다. 
+
+
+    
+## 2. rpart() 응용 실습
+    
+    #  weather.csv를 weather로 읽어서 RainTomorrow가 y변수, Data, RainTody를
+    #  제외한 나머지 변수가 x변수가 되도록 하여 decision tree를 작성
+    
+    ########################## <weather set> ###########################
+    # Date(측정날짜) MinTemp(최저기온) MaxTemp(최대기온) Rainfall(강수량) 
+    # Sunshine(햇빛)  WindGustDir(돌풍 방향) WindGustSpeed(돌풍 속도) 
+    # WindDir(바람방향) WindSpeed(바람속도) Humidity(습도) Pressure(기압) 
+    # Cloud(구름) Temp(온도) RainToday(오늘 비 여부) RainTomorrow(내일 비 여부) 
+    #################################################################
+    # 날씨에 따라서 비가 내릴지의 여부를 기록한 데이터이다. 
+    # 이 데이터를 분석하면 어떤 날씨 조건에 비가 내릴지 또는 내리지 않을지에
+    # 대한 판단 기준을 분석할 수 있다.
+    #################################################################
+
+    # 1) 데이터 가져오기
+        # c:/Rwork/Part-IV/weather.csv 파일 선택
+        weather = read.csv("c:/NCS/Rwork/Part-IV/weather.csv", header=TRUE) 
+    
+    
+    # 2) 데이터 특성 보기
+        str(weather) # data.frame':  366 obs. of  15 variables:
+        names(weather) # 15개 변수명
+        head(weather)
+    
+        
+    # 3) 분류분석 - 의사결정트리 생성
+        weather.df <- rpart(RainTomorrow ~ ., 
+                            data=weather[, c(-1,-14)], cp=0.01)
+        weather.df
+        # cp 속성 값을 높이면 가지 수가 적어지고, 낮추면 가지 수가 많아진다.
+        # cp 기본값은 0.01
+    
+        
+    # 4) 분류분석 시각화
+        X11()
+        plot(weather.df) # 트리 프레임 보임
+        text(weather.df, use.n=T, cex=0.7) # 텍스트 추가
+        # post(weather.df, file="") # 타원제공 - rpart 패키지 제공 
+    
+    
+    # 5) 예측치 생성 
+        weather_pred <- predict(weather.df, weather)
+        weather_pred
+    
+        # y의 범주로 코딩 변환 : Yes(0.5이상), No(0.5 미만)
+        weather_pred2 <- ifelse(weather_pred[,2] >= 0.67, 'Yes', 'No' )
+    
+        
+    # 6) 모델 평가(분류 정확도) 
+        table(weather_pred2, weather$RainTomorrow)
+        
+        # 0.5
+        # weather_pred2  No Yes
+        #           No  278  13
+        #           Yes  22  53
+        (278+53)/nrow(weather)
+        # [1] 0.9043716
+        
+        # 0.6
+        # weather_pred2  No Yes
+        #           No  281  17
+        #           Yes  19  49
+        (281+49)/nrow(weather)
+        # [1] 0.9016393
+        
+        # 0.7
+        # weather_pred2  No Yes
+        #           No  287  29
+        #           Yes  13  37
+        (287+37)/nrow(weather)
+        # [1] 0.8852459
+        
+        
+        
+        
+        

@@ -104,14 +104,39 @@ str(mpg)
 
 # 단계1 : 데이터 가져오기
 library(rpart)
-weather = read.csv("c:/Rwork/Part-IV/weather.csv", header=TRUE) 
+weather = read.csv("c:/NCS/Rwork/Part-IV/weather.csv", header=TRUE) 
+str(weather)
 
 # 단계2 : 데이터 샘플링
-
+    weather <- weather[,c(-1,-14)]
+    weather
+    idx <- sample(1:nrow(weather), nrow(weather)*0.7)
+    train <- weather[idx,]
+    test <- weather[-idx,]
+            
 # 단계3 : 분류모델 생성
+    model <- rpart(RainTomorrow~., data=train)
 
 # 단계4 : 예측치 생성 : 검정데이터 이용 
-
+    pred <- predict(model, test)
+    
 # 단계5 : 예측 확률 범주화('Yes Rain', 'No Rain') 
-
+    pred
+    pred2 <- ifelse(pred[,1]>=0.5, 'no','yes')
+    
 # 단계6 : 혼돈 matrix 생성 및 분류 정확도 구하기
+    table(pred2, test$RainTomorrow)
+    
+    # pred2 No Yes
+    #   no  86  17
+    #   yes  2   5
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
